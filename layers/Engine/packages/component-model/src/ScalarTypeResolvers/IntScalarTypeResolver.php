@@ -16,13 +16,18 @@ class IntScalarTypeResolver extends AbstractScalarTypeResolver
         return (int) $scalarValue;
     }
 
-    public function parseLiteral(string|int|float|bool|array|null $inputValue): mixed
+    public function coerceValue(mixed $inputValue): mixed
     {
         return (int) $inputValue;
     }
 
-    public function parseValue(mixed $scalarValue): mixed
-    {
-        return (int) $scalarValue;
-    }
+    // public function parseLiteral(string|int|float|bool|array|null $inputValue): mixed
+    // {
+    //     return (int) $inputValue;
+    // }
+
+    // public function parseValue(mixed $scalarValue): mixed
+    // {
+    //     return (int) $scalarValue;
+    // }
 }

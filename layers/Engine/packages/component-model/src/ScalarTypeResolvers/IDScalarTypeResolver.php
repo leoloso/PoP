@@ -32,13 +32,18 @@ class IDScalarTypeResolver extends AbstractScalarTypeResolver
      *
      * @see https://spec.graphql.org/draft/#sec-ID.Input-Coercion
      */
-    public function parseLiteral(string|int|float|bool|array|null $inputValue): mixed
+    public function coerceValue(mixed $inputValue): mixed
     {
         return $inputValue;
     }
 
-    public function parseValue(mixed $scalarValue): mixed
-    {
-        return $scalarValue;
-    }
+    // public function parseLiteral(string|int|float|bool|array|null $inputValue): mixed
+    // {
+    //     return $inputValue;
+    // }
+
+    // public function parseValue(mixed $scalarValue): mixed
+    // {
+    //     return $scalarValue;
+    // }
 }

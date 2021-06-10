@@ -26,24 +26,38 @@ interface ScalarTypeResolverInterface
     public function serialize(mixed $scalarValue): string|int|float|array;
 
     /**
-     * Literal input coercion. Called by the (GraphQL) engine to convert an input
+     * It handles both "Literal input coercion" and "Value input coercion"
+     * from the GraphQL spec.
+     * 
+     * Called by the (GraphQL) engine to convert an input
      * (such as field argument `"Hallo!"` in `{ echo(msg: "Hallo!") }`)
      * into the corresponding scalar entity (in this case, a String).
      *
+     * @param inputValue mixed the (custom) scalar in any format: itself (eg: an object) or its representation (eg: as a string)
      * @return mixed the (custom) scalar
      * @see https://spec.graphql.org/draft/#sec-Input-Values
      */
-    public function parseLiteral(string|int|float|bool|array|null $inputValue): mixed;
+    public function coerceValue(mixed $inputValue): mixed;
 
-    /**
-     * Value input coercion.
-     * 
-     * Similar to `serialize` in that it can take any input: the (custom)
-     * scalar itself, or a representation of it (as string, int, etc).
-     * 
-     * Similar to `parseLiteral` in that it must return the scalar entity
-     *
-     * @return mixed the (custom) scalar
-     */
-    public function parseValue(mixed $scalarValue): mixed;
+    // /**
+    //  * Literal input coercion. Called by the (GraphQL) engine to convert an input
+    //  * (such as field argument `"Hallo!"` in `{ echo(msg: "Hallo!") }`)
+    //  * into the corresponding scalar entity (in this case, a String).
+    //  *
+    //  * @return mixed the (custom) scalar
+    //  * @see https://spec.graphql.org/draft/#sec-Input-Values
+    //  */
+    // public function parseLiteral(string|int|float|bool|array|null $inputValue): mixed;
+
+    // /**
+    //  * Value input coercion.
+    //  * 
+    //  * Similar to `serialize` in that it can take any input: the (custom)
+    //  * scalar itself, or a representation of it (as string, int, etc).
+    //  * 
+    //  * Similar to `parseLiteral` in that it must return the scalar entity
+    //  *
+    //  * @return mixed the (custom) scalar
+    //  */
+    // public function parseValue(mixed $scalarValue): mixed;
 }

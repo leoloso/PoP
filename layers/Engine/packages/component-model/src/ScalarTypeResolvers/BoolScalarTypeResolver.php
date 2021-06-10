@@ -16,13 +16,18 @@ class BoolScalarTypeResolver extends AbstractScalarTypeResolver
         return (bool) $scalarValue;
     }
 
-    public function parseLiteral(string|int|float|bool|array|null $inputValue): mixed
+    public function coerceValue(mixed $inputValue): mixed
     {
         return (bool) $inputValue;
     }
 
-    public function parseValue(mixed $scalarValue): mixed
-    {
-        return (bool) $scalarValue;
-    }
+    // public function parseLiteral(string|int|float|bool|array|null $inputValue): mixed
+    // {
+    //     return (bool) $inputValue;
+    // }
+
+    // public function parseValue(mixed $scalarValue): mixed
+    // {
+    //     return (bool) $scalarValue;
+    // }
 }
