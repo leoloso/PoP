@@ -11,7 +11,7 @@ namespace PoP\ComponentModel\ScalarTypeResolvers;
  */
 interface ScalarTypeResolverInterface
 {
-    public function getScalarName(): string;
+    public function getScalarTypeName(): string;
 
     /**
      * Result coercion. Called by the (GraphQL) engine when printing the response.

@@ -6,7 +6,7 @@ namespace PoP\ComponentModel\ScalarTypeResolvers;
 
 class StringScalarTypeResolver extends AbstractScalarTypeResolver
 {
-    public function getScalarName(): string
+    public function getScalarTypeName(): string
     {
         return 'string';
     }
