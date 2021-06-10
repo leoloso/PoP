@@ -16,12 +16,14 @@ interface ScalarTypeResolverInterface
     /**
      * Result coercion. Called by the (GraphQL) engine when printing the response.
      *
-     * It takes the scalar entity as an input (any type except `null`),
-     * and it is converted into a string, to be output on the response.
+     * It takes the scalar entity as an input and it is converted
+     * into a format that can be output on the response.
+     * 
+     * `array` is supported as an output type, as to support `JSONObject`.
      *
-     * @return string|int|float formatted representation of the custom scalar
+     * @return string|int|float|array formatted representation of the custom scalar
      */
-    public function serialize(string|int|bool|float|object|array $scalarValue): string|int|float|array;
+    public function serialize(mixed $scalarValue): string|int|float|array;
 
     /**
      * Literal input coercion. Called by the (GraphQL) engine to convert an input
@@ -31,9 +33,9 @@ interface ScalarTypeResolverInterface
      * Using `string|int|float` as input types, since those are all possible
      * types that can be used as inputs.
      *
-     * @return string|int|float|object|array the (custom) scalar
+     * @return mixed the (custom) scalar
      */
-    public function parseLiteral(string|int|float|array $inputValue): string|int|bool|float|object|array;
+    public function parseLiteral(string|int|float $inputValue): mixed;
 
     /**
      * Value input coercion.
@@ -43,7 +45,7 @@ interface ScalarTypeResolverInterface
      * 
      * Similar to `parseLiteral` in that it must return the scalar entity
      *
-     * @return string|int|bool|float|object|array the (custom) scalar
+     * @return mixed the (custom) scalar
      */
-    public function parseValue(string|int|bool|float|object|array $scalarValue): string|int|bool|float|object|array;
+    public function parseValue(mixed $scalarValue): mixed;
 }
