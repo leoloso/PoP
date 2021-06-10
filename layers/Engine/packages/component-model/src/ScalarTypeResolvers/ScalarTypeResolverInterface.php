@@ -29,13 +29,11 @@ interface ScalarTypeResolverInterface
      * Literal input coercion. Called by the (GraphQL) engine to convert an input
      * (such as field argument `"Hallo!"` in `{ echo(msg: "Hallo!") }`)
      * into the corresponding scalar entity (in this case, a String).
-     * 
-     * Using `string|int|float` as input types, since those are all possible
-     * types that can be used as inputs.
      *
      * @return mixed the (custom) scalar
+     * @see https://spec.graphql.org/draft/#sec-Input-Values
      */
-    public function parseLiteral(string|int|float $inputValue): mixed;
+    public function parseLiteral(string|int|float|bool|array|null $inputValue): mixed;
 
     /**
      * Value input coercion.
