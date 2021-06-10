@@ -19,9 +19,9 @@ interface ScalarTypeResolverInterface
      * It takes the scalar entity as an input (an object, string, int, etc),
      * and it is converted into a string, to be output on the response.
      *
-     * @return string formatted representation of the custom scalar as a string
+     * @return string|int formatted representation of the custom scalar
      */
-    public function serialize(mixed $scalarValue): string;
+    public function serialize(mixed $scalarValue): string|int;
 
     /**
      * Literal input coercion. Called by the (GraphQL) engine to convert an input
