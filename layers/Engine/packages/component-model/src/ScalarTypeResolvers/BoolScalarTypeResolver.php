@@ -11,7 +11,7 @@ class BoolScalarTypeResolver extends AbstractScalarTypeResolver
         return 'bool';
     }
 
-    public function serialize(mixed $scalarValue): string|int|float|array
+    public function serialize(mixed $scalarValue): string|int|float|bool|array
     {
         return (bool) $scalarValue;
     }

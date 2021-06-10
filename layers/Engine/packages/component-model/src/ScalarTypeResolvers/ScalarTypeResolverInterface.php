@@ -21,9 +21,9 @@ interface ScalarTypeResolverInterface
      * 
      * `array` is supported as an output type, as to support `JSONObject`.
      *
-     * @return string|int|float|array formatted representation of the custom scalar
+     * @return string|int|float|bool|array formatted representation of the custom scalar
      */
-    public function serialize(mixed $scalarValue): string|int|float|array;
+    public function serialize(mixed $scalarValue): string|int|float|bool|array;
 
     /**
      * It handles both "Literal input coercion" and "Value input coercion"
