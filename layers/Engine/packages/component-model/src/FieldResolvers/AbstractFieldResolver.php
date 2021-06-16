@@ -312,6 +312,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 }
                 if ($schemaTypeModifiers & SchemaTypeModifiers::IS_ARRAY) {
                     $schemaDefinition[SchemaDefinition::ARGNAME_IS_ARRAY] = true;
+                    if ($schemaTypeModifiers & SchemaTypeModifiers::NON_EMPTY_ARRAY) {
+                        $schemaDefinition[SchemaDefinition::ARGNAME_NON_EMPTY_ARRAY] = true;
+                    }
                 }
                 if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($typeResolver, $fieldName)) {
                     $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
@@ -497,13 +500,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             $validation = $engine->validateCheckpoints($checkpoints);
             if (GeneralUtils::isError($validation)) {
                 $error = $validation;
-                $errorMessage = $error->getErrorMessage();
-                if (!$errorMessage) {
-                    $errorMessage = sprintf(
-                        $this->translationAPI->__('Validation with code \'%s\' failed', 'component-model'),
-                        $error->getErrorCode()
-                    );
-                }
+                $errorMessage = $error->getMessageOrCode();
                 // Allow to customize the error message for the failing entity
                 return [
                     $this->getValidationCheckpointsErrorMessage($error, $errorMessage, $typeResolver, $resultItem, $fieldName, $fieldArgs)

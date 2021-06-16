@@ -29,7 +29,9 @@ class ComponentConfiguration
     private static bool $enableAdminSchema = false;
     private static bool $validateFieldTypeResponseWithSchemaDefinition = false;
     private static bool $treatTypeCoercingFailuresAsErrors = false;
+    private static bool $treatUndefinedFieldOrDirectiveArgsAsErrors = false;
     private static bool $setFailingFieldResponseAsNull = false;
+    private static bool $removeFieldIfDirectiveFailed = false;
 
     /**
      * Initialize component configuration
@@ -249,6 +251,29 @@ class ComponentConfiguration
     }
 
     /**
+     * By default, querying for a field or directive argument
+     * which has not been defined in the schema
+     * is treated as a warning, not an error
+     */
+    public static function treatUndefinedFieldOrDirectiveArgsAsErrors(): bool
+    {
+        // Define properties
+        $envVariable = Environment::TREAT_UNDEFINED_FIELD_OR_DIRECTIVE_ARGS_AS_ERRORS;
+        $selfProperty = &self::$treatUndefinedFieldOrDirectiveArgsAsErrors;
+        $defaultValue = false;
+        $callback = [EnvironmentValueHelpers::class, 'toBool'];
+
+        // Initialize property from the environment/hook
+        self::maybeInitializeConfigurationValue(
+            $envVariable,
+            $selfProperty,
+            $defaultValue,
+            $callback
+        );
+        return $selfProperty;
+    }
+
+    /**
      * The GraphQL spec indicates that, when a field produces an error (during
      * value resolution or coercion) then its response must be set as null:
      * 
@@ -261,6 +286,27 @@ class ComponentConfiguration
         // Define properties
         $envVariable = Environment::SET_FAILING_FIELD_RESPONSE_AS_NULL;
         $selfProperty = &self::$setFailingFieldResponseAsNull;
+        $defaultValue = false;
+        $callback = [EnvironmentValueHelpers::class, 'toBool'];
+
+        // Initialize property from the environment/hook
+        self::maybeInitializeConfigurationValue(
+            $envVariable,
+            $selfProperty,
+            $defaultValue,
+            $callback
+        );
+        return $selfProperty;
+    }
+
+    /**
+     * Indicate: If a directive fails, then remove the affected IDs/fields from the upcoming stages of the directive pipeline execution
+     */
+    public static function removeFieldIfDirectiveFailed(): bool
+    {
+        // Define properties
+        $envVariable = Environment::REMOVE_FIELD_IF_DIRECTIVE_FAILED;
+        $selfProperty = &self::$removeFieldIfDirectiveFailed;
         $defaultValue = false;
         $callback = [EnvironmentValueHelpers::class, 'toBool'];
 

@@ -7,6 +7,7 @@ namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\ComponentModel\ComponentConfiguration;
 use PoP\ComponentModel\Container\ServiceTags\MandatoryDirectiveServiceTagInterface;
 use PoP\ComponentModel\Directives\DirectiveTypes;
+use PoP\ComponentModel\ErrorHandling\Error;
 use PoP\ComponentModel\Feedback\Tokens;
 use PoP\ComponentModel\Misc\GeneralUtils;
 use PoP\ComponentModel\TypeResolvers\PipelinePositions;
@@ -184,19 +185,36 @@ final class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiv
         return $value;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    protected function getErrorOutput(Error $error): array
+    {
+        $errorOutput = [
+            Tokens::MESSAGE => $error->getMessageOrCode(),
+            Tokens::EXTENSIONS => $error->getData(),
+        ];
+        foreach ($error->getNestedErrors() as $nestedError) {
+            $errorOutput[Tokens::EXTENSIONS][Tokens::NESTED][] = $this->getErrorOutput($nestedError);
+        }
+        return $errorOutput;
+    }
+
     protected function addValueForResultItem(TypeResolverInterface $typeResolver, $id, string $field, $value, array &$dbItems, array &$dbErrors)
     {
         // The dataitem can contain both rightful values and also errors (eg: when the field doesn't exist, or the field validation fails)
         // Extract the errors and add them on the other array
         if (GeneralUtils::isError($value)) {
             // Extract the error message
+            /** @var Error */
             $error = $value;
-            foreach ($error->getErrorMessages() as $errorMessage) {
-                $dbErrors[(string)$id][] = [
+            $dbErrors[(string)$id][] = array_merge(
+                [
                     Tokens::PATH => [$field],
-                    Tokens::MESSAGE => $errorMessage,
-                ];
-            }
+                ],
+                $this->getErrorOutput($error)
+            );
+
             // For GraphQL, set the response for the failing field as null
             if (ComponentConfiguration::setFailingFieldResponseAsNull()) {
                 $fieldOutputKey = $this->fieldQueryInterpreter->getFieldOutputKey($field);

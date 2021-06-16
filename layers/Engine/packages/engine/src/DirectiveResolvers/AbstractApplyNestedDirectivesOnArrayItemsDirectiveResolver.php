@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace PoP\Engine\DirectiveResolvers;
 
-use PoP\FieldQuery\QuerySyntax;
-use PoP\FieldQuery\QueryHelpers;
+use PoP\ComponentModel\DirectiveResolvers\AbstractGlobalDirectiveResolver;
+use PoP\ComponentModel\ErrorHandling\Error;
+use PoP\ComponentModel\Feedback\Tokens;
 use PoP\ComponentModel\Misc\GeneralUtils;
-use PoP\Engine\Dataloading\Expressions;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\TypeResolvers\AbstractTypeResolver;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
-use PoP\ComponentModel\DirectiveResolvers\AbstractGlobalDirectiveResolver;
-use PoP\ComponentModel\Feedback\Tokens;
+use PoP\Engine\Dataloading\Expressions;
+use PoP\FieldQuery\QueryHelpers;
+use PoP\FieldQuery\QuerySyntax;
 
 abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
@@ -223,6 +224,7 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                 $pipelineArrayItemIdsProperties[] = $arrayItemIdsProperties;
             }
             // 2. Execute the composed directive pipeline on all arrayItems
+            $nestedSchemaErrors = $nestedIDDBErrors = [];
             $nestedDirectivePipeline->resolveDirectivePipeline(
                 $typeResolver,
                 $pipelineArrayItemIdsProperties, // Here we pass the properties to the array elements!
@@ -233,17 +235,40 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                 $previousDBItems,
                 $variables,
                 $messages,
-                $dbErrors,
+                $nestedIDDBErrors,
                 $dbWarnings,
                 $dbDeprecations,
                 $dbNotices,
                 $dbTraces,
-                $schemaErrors,
+                $nestedSchemaErrors,
                 $schemaWarnings,
                 $schemaDeprecations,
                 $schemaNotices,
                 $schemaTraces
             );
+
+            // If there was an error, prepend the path
+            if ($nestedSchemaErrors) {
+                $schemaError = [
+                    Tokens::PATH => [$this->directive],
+                    Tokens::MESSAGE => $this->translationAPI->__('The nested directive has produced errors', 'component-model'),
+                ];
+                foreach ($nestedSchemaErrors as $nestedSchemaError) {
+                    array_unshift($nestedSchemaError[Tokens::PATH], $this->directive);
+                    $this->prependPathOnNestedErrors($nestedSchemaError);
+                    $schemaError[Tokens::EXTENSIONS][Tokens::NESTED][] = $nestedSchemaError;
+                }
+                $schemaErrors[] = $schemaError;
+            }
+            if ($nestedIDDBErrors) {
+                foreach ($nestedIDDBErrors as $id => $nestedDBErrors) {
+                    foreach ($nestedDBErrors as &$nestedDBError) {
+                        array_unshift($nestedDBError[Tokens::PATH], $this->directive);
+                        $this->prependPathOnNestedErrors($nestedDBError);
+                    }
+                    $dbErrors[(string) $id] = $nestedDBErrors;                
+                }
+            }
 
             // 3. Compose the array from the results for each array item
             foreach ($idsDataFields as $id => $dataFields) {
@@ -291,6 +316,7 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                         unset($dbItems[(string)$id][$arrayItemPropertyOutputKey]);
                         // Validate it's not an error
                         if (GeneralUtils::isError($arrayItemValue)) {
+                            /** @var Error */
                             $error = $arrayItemValue;
                             $dbErrors[(string)$id][] = [
                                 Tokens::PATH => [$this->directive],
@@ -299,7 +325,7 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                                     $key,
                                     $fieldOutputKey,
                                     $id,
-                                    $error->getErrorMessage()
+                                    $error->getMessageOrCode()
                                 ),
                             ];
                             continue;
@@ -397,6 +423,7 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                     }
                     if (GeneralUtils::isError($resolvedValue)) {
                         // Show the error message, and return nothing
+                        /** @var Error */
                         $error = $resolvedValue;
                         $dbErrors[(string)$id][] = [
                             Tokens::PATH => [$this->directive],
@@ -404,7 +431,7 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                                 $this->translationAPI->__('Executing field \'%s\' on object with ID \'%s\' produced error: %s. Setting expression \'%s\' was ignored', 'pop-component-model'),
                                 $value,
                                 $id,
-                                $error->getErrorMessage(),
+                                $error->getMessageOrCode(),
                                 $key
                             ),
                         ];
@@ -428,6 +455,7 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                     }
                     if (GeneralUtils::isError($resolvedValue)) {
                         // Show the error message, and return nothing
+                        /** @var Error */
                         $error = $resolvedValue;
                         $dbErrors[(string)$id][] = [
                             Tokens::PATH => [$this->directive],
@@ -435,7 +463,7 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                                 $this->translationAPI->__('Executing field \'%s\' on object with ID \'%s\' produced error: %s. Setting expression \'%s\' was ignored', 'pop-component-model'),
                                 $value,
                                 $id,
-                                $error->getErrorMessage(),
+                                $error->getMessageOrCode(),
                                 $key
                             ),
                         ];
